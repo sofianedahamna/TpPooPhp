@@ -103,21 +103,6 @@ class Projet extends Model {
 		 
 		return $this->membres;
 	}
-	
-
-	public static function getAdmin() {
-		$sql = "SELECT nom,prenom,email
-		FROM utilisateur
-		INNER JOIN projet ON utilisateur.id = projet.id_utlstr";
-
-		$result = Model::ExecForMember($sql);
-		foreach ($result as $key => $value) {
-			$utilisateur = $value;
-			self::setAdministrateur($utilisateur);
-		}
-		 
-		return self::$administrateur;
-	}
 
 	/**
 	 * @param mixed $membres 

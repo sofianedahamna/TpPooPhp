@@ -1,8 +1,9 @@
 <?php
 
-namespace Megan\TpGestionProjet\entities;
+namespace Digi\Keha\Entity;
+use Digi\Keha\Kernel\Model;
 
-class Tache {
+class Tache extends Model{
     private $id_task;
     private $titre;
     private $description;

@@ -6,6 +6,9 @@ use Digi\Keha\Kernel\AbstractController;
 use Digi\Keha\Kernel\Views;
 use Digi\Keha\Entity\Projet;
 use Digi\Keha\Entity\UserProject;
+use Digi\Keha\Entity\Prioriter;
+use Digi\Keha\Entity\CycleVie;
+use Digi\Keha\Entity\Tache;
 
 class User extends AbstractController {
 
@@ -19,23 +22,23 @@ class User extends AbstractController {
         $user = Utilisateur::getAll();
         $projet = new Projet();
         $projet->getMembres();
-        //var_dump($projet);
         $view->setHtml('User/compte.php');
         $projects = Projet::getAllByAttributes(['id_utlstr' => $_SESSION['id']]); 
         $testProjet = Projet::getAllProject();
-        
-        //var_dump($testProjet);
+        $cycleDeVie = CycleVie::getAll();
+        $prioriter = Prioriter::getAll();
         $view->render(
             [
                 'flash' => $this->getFlashMessage(),
                 'projects' => $projects,
                 "projet"=>$projet,
                 "user"=>$user,
-                "test"=>$testProjet
+                "test"=>$testProjet,
+                "Cycle"=>$cycleDeVie,
+                "Prioriter"=>$prioriter
             ]
             );
     }
-
     // Méthode pour créer un nouvel enregistrement
     public function createUser()
     {
@@ -86,14 +89,25 @@ class User extends AbstractController {
             $result = Projet::delete($id);
             json_encode($result);
             echo json_encode($result);
+        } else {
+            echo "Erreur lors de la suppresion";
         }
 
     }
     public function addTask()
     {
-        if (isset($_POST[""]) && isset($_POST[""] )  && isset($_POST[""])) {
-            # ajouter une tache avec les element prioriter et cycle de vie 
-        }
+        if (isset($_POST["titre"]) && isset($_POST["description"] )  && isset($_POST["id_cycle"]) && isset($_POST["id_prio"]) && isset($_POST["id_utlstr"] )  && isset($_POST["id_project"])) {
+           $titre = $_POST["titre"];
+           $description = $_POST["description"] ;
+           $id_cycle = $_POST["id_cycle"];
+           $id_prio = $_POST["id_prio"];
+           $id_utlstr = $_POST["id_utlstr"];
+           $id_project = $_POST["id_project"];
+           $datas = ["titre" => $titre, "description" => $description, "id_cycle" => $id_cycle,"id_prio" => $id_prio,"id_project"=> $id_project,"id_utlstr"=> $id_utlstr];
+           $task = Tache::insert($datas);
+           json_encode( $task);
+           echo json_encode( $task);
+        } 
     }
 
     public function addUserToProject()
@@ -123,6 +137,19 @@ class User extends AbstractController {
            $nouveauProjet = Projet::insert($datas);
            json_encode($nouveauProjet);
            echo json_encode($nouveauProjet);
+        }
+    }
+
+    public function updateTask(){
+        
+        if (isset($_POST["id_cycle"]) && isset($_POST["id_tache"])) {
+            $id_cycle = $_POST["id_cycle"];
+            $id = $_POST["id_tache"];
+            intval($id);
+            $datas = ["id_cycle" => $id_cycle];
+            $updateTaskStatus = Tache::update($id , $datas);
+            json_encode($updateTaskStatus);
+            echo json_encode($updateTaskStatus);
         }
     }
 }

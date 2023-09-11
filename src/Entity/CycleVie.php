@@ -1,16 +1,12 @@
 <?php
 
-namespace Megan\TpGestionProjet\entities;
-
-class CycleVie {
+namespace Digi\Keha\Entity;
+use Digi\Keha\Kernel\Model;
+class CycleVie extends Model{
     private $id_cycle;
     private $status;
 
-    public function __construct($id_cycle, $status) {
-        $this->id_cycle = $id_cycle;
-        $this->status = $status;
-    }
-
+   
 	/**
 	 * @return mixed
 	 */

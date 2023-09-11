@@ -3,6 +3,8 @@
 // Définit le namespace de la classe Model.
 namespace Digi\Keha\Kernel;
 
+use PDOStatement;
+
 // Déclaration de la classe Model.
 class Model
 {
@@ -44,7 +46,7 @@ class Model
         $pdostatement = Db::getInstance()->query($sql);
 
         // Renvoie le résultat de la requête sous forme d'instances de la classe actuelle.
-        return $pdostatement->fetchAll(\PDO::FETCH_DEFAULT);
+        return $pdostatement->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // Récupère tous les enregistrements de la table actuelle.
@@ -107,27 +109,38 @@ class Model
         // Construit la requête SQL.
         $sql = self::getByAttribute($attributes);
         // Exécute la requête et renvoie tous les résultats.
-        $result = self::Execute($sql);
+        $result = self::ExecForMember($sql);
         return $result;
     }
 
     public static function getAllProject(){
-        $sql1 =" SELECT 
-        projet.id AS projet_id,
-        projet.titre AS projet_titre,
-        projet.description AS projet_description,
-        utilisateur.id AS utilisateur_id,
-        utilisateur.nom,
-        utilisateur.prenom,
-        utilisateur.email
-    FROM projet
-    LEFT JOIN userproject ON projet.id = userproject.id_project
-    LEFT JOIN utilisateur ON userproject.id_utlstr = utilisateur.id
-    ORDER BY projet.id, utilisateur.id ";
-
-    $result = self::ExecForMember($sql1);
-    return $result;
+        $sql1 ="
+        SELECT 
+            projet.id AS projet_id,
+            projet.titre AS projet_titre,
+            projet.description AS projet_description,
+            utilisateur.id AS utilisateur_id,
+            projet.id_utlstr, 
+            utilisateur.nom,
+            utilisateur.prenom,
+            utilisateur.email,
+            tache.id AS tache_id,
+            tache.titre AS tache_titre,
+            tache.description AS tache_description,
+            tache.id_cycle AS tache_id_cycle,
+            tache.id_prio AS tache_id_prio,
+            tache.id_utlstr AS tache_id_utlstr
+        FROM projet
+        LEFT JOIN userproject ON projet.id = userproject.id_project
+        LEFT JOIN utilisateur ON userproject.id_utlstr = utilisateur.id
+        LEFT JOIN tache ON projet.id = tache.id_project
+        ORDER BY projet.id, utilisateur.id, tache.id
+        ";
+    
+        $result = self::ExecForMember($sql1);
+        return $result;
     }
+    
 
     // Vérifie le mot de passe pour un email donné.
     public static function VerifyPass(string $email)
@@ -148,35 +161,45 @@ class Model
      * @return int Retourne le nombre de lignes insérées.
      */
     public static function insert(array $datas)
-    {
-        // Débute la construction de la requête SQL. 
-        // Le nom de l'entité (table) est récupéré via la fonction getEntityName().
-        // On présume ici que la première colonne est une clé primaire auto-incrémentée, d'où la valeur NULL.
-        $sql = "insert into " . self::getEntityName() . " values (NULL,";
-       
+{
+    // Obtenez une instance de votre connexion à la base de données.
+    $db = Db::getInstance();
 
-        $count = count($datas); // Compte le nombre de données à insérer.
-        $i = 1; // Initialise le compteur pour suivre le nombre de données déjà ajoutées à la requête.
+    // Le nom de l'entité (table) est récupéré via la fonction getEntityName().
+    $tableName = self::getEntityName();
 
-        // Boucle à travers chaque donnée à insérer.
-        foreach ($datas as $data) {
-            // Si la donnée actuelle n'est pas la dernière, ajoute une virgule après.
-            if ($i < $count) {
-                $sql .= "'$data',";
-            } else {
-                // Si c'est la dernière donnée, n'ajoute pas de virgule après.
-                $sql .= "'$data'";
-            }
-            $i++; // Incrémente le compteur.       
+    // Construction de la requête SQL.
+    // On présume ici que la première colonne est une clé primaire auto-incrémentée, d'où la valeur NULL.
+    $sql = "INSERT INTO {$tableName} VALUES (NULL,";
+
+    $count = count($datas); // Compte le nombre de données à insérer.
+    $i = 1; // Initialise le compteur pour suivre le nombre de données déjà ajoutées à la requête.
+
+    // Boucle à travers chaque donnée à insérer.
+    foreach ($datas as $data) {
+        // Utilisez la méthode quote() pour échapper la donnée.
+        $quotedData = $db->quote($data);
+
+        // Si la donnée actuelle n'est pas la dernière, ajoute une virgule après.
+        if ($i < $count) {
+            $sql .= "{$quotedData},";
+        } else {
+            // Si c'est la dernière donnée, n'ajoute pas de virgule après.
+            $sql .= "{$quotedData}";
         }
-
-        // Termine la construction de la requête SQL.
-        $sql .= ")";
-        var_dump($sql);
-        // Exécute la requête en utilisant l'instance de la base de données 
-        // et renvoie le nombre de lignes insérées.
-        return Db::getInstance()->exec($sql);
+        $i++; // Incrémente le compteur.       
     }
+
+    // Termine la construction de la requête SQL.
+    $sql .= ")";
+
+    // Exécute la requête.
+    $result = $db->exec($sql);
+
+    // Renvoie le nombre de lignes insérées ou false en cas d'échec.
+    return ($result !== false) ? $result : false;
+}
+
 
     /**
      * Insère des données dans la table de l'entité actuelle.
@@ -190,7 +213,7 @@ class Model
         // Le nom de l'entité (table) est récupéré via la fonction getEntityName().
         // On présume ici que la première colonne est une clé primaire auto-incrémentée, d'où la valeur NULL.
         $sql = "insert into " . self::getEntityName() . " values (";
-        //var_dump($sql); // Affiche la partie initiale de la requête SQL pour des raisons de débogage.
+        
 
         $count = count($datas); // Compte le nombre de données à insérer.
         $i = 1; // Initialise le compteur pour suivre le nombre de données déjà ajoutées à la requête.
@@ -227,28 +250,40 @@ class Model
         return Db::getInstance()->exec($sql);
     }
 
-    // Met à jour un enregistrement par son ID avec de nouvelles données.
     public static function update(int $id, array $datas)
     {
-        // Débute la construction de la requête SQL.
-        $sql = "update " . self::getEntityName() . " set ";
+        // Obtenez une instance de votre connexion à la base de données.
+        $db = Db::getInstance();
+    
+        // Le nom de l'entité (table) est récupéré via la fonction getEntityName().
+        $tableName = self::getEntityName();
+    
+        // Construction de la requête SQL.
+        $sql = "UPDATE {$tableName} SET ";
+    
         $count = count($datas);
         $i = 1;
-
+    
         // Ajoute chaque paire clé-valeur à la requête SQL.
         foreach ($datas as $key => $value) {
+            // Utilisez la méthode quote() pour échapper la valeur.
+            $quotedValue = $db->quote($value);
+    
             if ($i < $count) {
-                $sql .= "$key='$value',";
+                $sql .= "{$key}={$quotedValue},";
             } else {
-                $sql .= "$key='$value'";
+                $sql .= "{$key}={$quotedValue}";
             }
             $i++;
         }
-
+    
+        // Utilisez la méthode quote() pour échapper l'ID, bien que dans ce cas l'ID soit un int, donc moins susceptible d'être une source de vulnérabilité.
+        $quotedId = $db->quote($id);
         // Ajoute la clause WHERE pour spécifier l'ID.
-        $sql .= " where id=$id";
-
+        $sql .= " WHERE id={$quotedId}";
+    
         // Exécute la requête et renvoie le résultat.
-        return Db::getInstance()->exec($sql);
+        return $db->exec($sql);
     }
+    
 }

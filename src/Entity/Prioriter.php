@@ -1,15 +1,13 @@
 <?php
 
-namespace Megan\TpGestionProjet\entities;
+namespace Digi\Keha\Entity;
+use Digi\Keha\Kernel\Model;
 
-class Prioriter {
+class Prioriter extends Model{
     private $id_prio;
     private $prioriter;
 
-    public function __construct($id_prio, $prioriter) {
-        $this->id_prio = $id_prio;
-        $this->prioriter = $prioriter;
-    }
+    
 
 	/**
 	 * @return mixed
