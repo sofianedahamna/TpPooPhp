@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <header>
+            <?php
+                if($flash !== null) {
+                    echo $flash;
+                }
+            ?>
+        </header>
+        <main>
+            <?php
+                echo $var;
+            ?>
+        </main>
+        <footer>
+            <?php
+                foreach ($var2 as $note) {
+                    echo $note->getNote().' - id='.$note->getId();
+                    echo "<a href='index.php?controller=index&method=delete&id=".$note->getId()."'>Supprimer</a><br>";
+                }
+            ?>
+        </footer>
+    </body>
+</html>
