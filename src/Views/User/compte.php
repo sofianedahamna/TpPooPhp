@@ -97,7 +97,6 @@
                 
 
                     foreach ($projets as $project) {
-                        //var_dump($projets);
                         $displayedMembers = [];
                         $displayedTasks = [];
 
@@ -129,7 +128,7 @@
                         
                         
                         foreach ($project["tasks"] as $task) {
-                            //var_dump($project);
+                          
 
                             $uniqueTaskKey = $task["tache_titre"] . $task["tache_description"];
                             if (isset($displayedTasks[$uniqueTaskKey])) continue;
@@ -195,8 +194,6 @@
                 echo "<h2>Projets dont je suis membre</h2>";
                 afficherProjets($projetsMembre, false);
                 ?>
-
-          
 
         <!-- Modals delete-->
         <?php foreach ($projects as $element) : ?>

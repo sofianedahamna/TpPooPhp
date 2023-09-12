@@ -18,8 +18,6 @@ class Security {
     {
        session_start();
         $_SESSION['id'] = $id;
-        
-        
     }
 
     static function logout(){

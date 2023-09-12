@@ -114,6 +114,7 @@ class Model
     }
 
     public static function getAllProject(){
+
         $sql1 ="
         SELECT 
             projet.id AS projet_id,
@@ -136,7 +137,8 @@ class Model
         LEFT JOIN tache ON projet.id = tache.id_project
         ORDER BY projet.id, utilisateur.id, tache.id
         ";
-    
+      
+
         $result = self::ExecForMember($sql1);
         return $result;
     }

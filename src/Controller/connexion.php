@@ -24,7 +24,7 @@ class Connexion extends AbstractController {
         if(!$this->Connect()) {
             $view->render([
                 'flash' => $this->getFlashMessage(),
-                'var' => 'je suis une variable',
+                
             ]);
         } else {
             // Sinon, redirige vers la page de l'utilisateur
