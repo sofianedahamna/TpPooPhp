@@ -13,11 +13,12 @@
 </head>
 
 <body>
+    
     <div class="container">
         <h2>Liste des projets</h2>
         <button class="btn btn-info w-25 my-2" id="btn_create_projet">Creation de projet</button>
-          
-                <?php
+          <a href="index.php?controller=user&method=logout" class="btn btn-info w-25 my-2">Me deconnecter</a>
+            <?php
                 // Initialisation des tableaux pour les projets
                 $projetsAdmin = [];
                 $projetsMembre = [];

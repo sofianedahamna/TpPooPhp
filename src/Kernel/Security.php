@@ -21,4 +21,8 @@ class Security {
         
         
     }
+
+    static function logout(){
+        session_destroy();
+    } 
 }

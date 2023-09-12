@@ -16,6 +16,5 @@ class Index extends AbstractController {
             'var' => 'je suis une variable',
         ]);
     }
-
     
 }
